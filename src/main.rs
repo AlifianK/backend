@@ -2,6 +2,7 @@
 mod controllers;
 mod db;
 mod models;
+mod routes;
 mod views;
 
 #[tokio::main]
