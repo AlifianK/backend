@@ -14,6 +14,12 @@ pub struct CreateUser {
     pub email: String,
 }
 
+#[derive(Deserialize)]
+pub struct UpdateUser {
+    pub name: Option<String>,
+    pub email: Option<String>,
+}
+
 impl User {
     pub async fn find_by_id(pool: &SqlitePool, id: i64) -> sqlx::Result<Self> {
         sqlx::query_as!(Self, "SELECT * FROM users WHERE id = ?", id)
@@ -37,5 +43,20 @@ impl User {
             .execute(pool)
             .await
             .map(|_| ())
+    }
+
+    pub async fn update(pool: &SqlitePool, id: i64, data: UpdateUser) -> sqlx::Result<Self> {
+        sqlx::query_as!(
+            Self,
+            "UPDATE users SET
+                name  = COALESCE(?, name),
+                email = COALESCE(?, email)
+            WHERE id = ? RETURNING *",
+            data.name,
+            data.email,
+            id
+        )
+        .fetch_one(pool)
+        .await
     }
 }

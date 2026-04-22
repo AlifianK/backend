@@ -1,4 +1,4 @@
-use crate::models::user::{CreateUser, User};
+use crate::models::user::{CreateUser, UpdateUser, User};
 use crate::views::user_view::UserResponse;
 use axum::{
     Json,
@@ -35,4 +35,15 @@ pub async fn delete_user(
         .await
         .map(|_| StatusCode::NO_CONTENT)
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+}
+
+pub async fn update_user(
+    State(pool): State<SqlitePool>,
+    Path(id): Path<i64>,
+    Json(body): Json<UpdateUser>,
+) -> Result<Json<UserResponse>, StatusCode> {
+    User::update(&pool, id, body)
+        .await
+        .map(|u| Json(UserResponse::from(u)))
+        .map_err(|_| StatusCode::NOT_FOUND)
 }
