@@ -26,3 +26,13 @@ pub async fn create_user(
         .map(|u| Json(UserResponse::from(u)))
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
 }
+
+pub async fn delete_user(
+    State(pool): State<SqlitePool>,
+    Path(id): Path<i64>,
+) -> Result<StatusCode, StatusCode> {
+    User::delete(&pool, id)
+        .await
+        .map(|_| StatusCode::NO_CONTENT)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+}
