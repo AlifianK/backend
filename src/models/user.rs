@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
+use validator::Validate;
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct User {
@@ -8,15 +9,19 @@ pub struct User {
     pub email: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Validate)]
 pub struct CreateUser {
+    #[validate(length(min = 1, message = "Name cannot be empty"))]
     pub name: String,
+    #[validate(email(message = "Invalid email format"))]
     pub email: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Validate)]
 pub struct UpdateUser {
+    #[validate(length(min = 1, message = "Name cannot be empty"))]
     pub name: Option<String>,
+    #[validate(email(message = "Invalid email format"))]
     pub email: Option<String>,
 }
 

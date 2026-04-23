@@ -6,6 +6,7 @@ use axum::{
     http::StatusCode,
 };
 use sqlx::SqlitePool;
+use validator::Validate;
 
 pub async fn get_all_users(
     State(pool): State<SqlitePool>,
@@ -30,6 +31,8 @@ pub async fn create_user(
     State(pool): State<SqlitePool>,
     Json(body): Json<CreateUser>,
 ) -> Result<Json<UserResponse>, StatusCode> {
+    body.validate().map_err(|_| StatusCode::BAD_REQUEST)?;
+
     User::create(&pool, body)
         .await
         .map(|u| Json(UserResponse::from(u)))
@@ -58,6 +61,8 @@ pub async fn update_user(
     Path(id): Path<i64>,
     Json(body): Json<UpdateUser>,
 ) -> Result<Json<UserResponse>, StatusCode> {
+    body.validate().map_err(|_| StatusCode::BAD_REQUEST)?;
+
     User::update(&pool, id, body)
         .await
         .map(|u| Json(UserResponse::from(u)))
