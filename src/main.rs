@@ -1,6 +1,7 @@
 #![allow(unused)]
 mod controllers;
 mod db;
+mod errors;
 mod models;
 mod routes;
 mod views;

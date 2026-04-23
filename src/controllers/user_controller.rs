@@ -1,70 +1,60 @@
+use crate::errors::AppError;
 use crate::models::user::{CreateUser, UpdateUser, User};
 use crate::views::user_view::UserResponse;
 use axum::{
     Json,
     extract::{Path, State},
-    http::StatusCode,
 };
 use sqlx::SqlitePool;
 use validator::Validate;
 
 pub async fn get_all_users(
     State(pool): State<SqlitePool>,
-) -> Result<Json<Vec<UserResponse>>, StatusCode> {
+) -> Result<Json<Vec<UserResponse>>, AppError> {
     User::find_all(&pool)
         .await
         .map(|users| Json(users.into_iter().map(UserResponse::from).collect()))
-        .map_err(|_| StatusCode::NOT_FOUND)
+        .map_err(AppError::from)
 }
 
 pub async fn get_user(
     State(pool): State<SqlitePool>,
     Path(id): Path<i64>,
-) -> Result<Json<UserResponse>, StatusCode> {
+) -> Result<Json<UserResponse>, AppError> {
     User::find_by_id(&pool, id)
         .await
         .map(|u| Json(UserResponse::from(u)))
-        .map_err(|_| StatusCode::NOT_FOUND)
+        .map_err(AppError::from)
 }
 
 pub async fn create_user(
     State(pool): State<SqlitePool>,
     Json(body): Json<CreateUser>,
-) -> Result<Json<UserResponse>, StatusCode> {
-    body.validate().map_err(|_| StatusCode::BAD_REQUEST)?;
+) -> Result<Json<UserResponse>, AppError> {
+    body.validate().map_err(AppError::from)?;
 
     User::create(&pool, body)
         .await
         .map(|u| Json(UserResponse::from(u)))
-        .map_err(|e| match e {
-            sqlx::Error::Database(db_err)
-                if db_err.message().contains("UNIQUE constraint failed") =>
-            {
-                StatusCode::CONFLICT
-            }
-            _ => StatusCode::INTERNAL_SERVER_ERROR,
-        })
+        .map_err(AppError::from)
 }
 
 pub async fn delete_user(
     State(pool): State<SqlitePool>,
     Path(id): Path<i64>,
-) -> Result<StatusCode, StatusCode> {
-    User::delete(&pool, id)
-        .await
-        .map(|_| StatusCode::NO_CONTENT)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+) -> Result<(), AppError> {
+    User::delete(&pool, id).await.map_err(AppError::from)
 }
 
 pub async fn update_user(
     State(pool): State<SqlitePool>,
     Path(id): Path<i64>,
     Json(body): Json<UpdateUser>,
-) -> Result<Json<UserResponse>, StatusCode> {
-    body.validate().map_err(|_| StatusCode::BAD_REQUEST)?;
+) -> Result<Json<UserResponse>, AppError> {
+    body.validate().map_err(AppError::from)?;
 
     User::update(&pool, id, body)
         .await
         .map(|u| Json(UserResponse::from(u)))
-        .map_err(|_| StatusCode::NOT_FOUND)
+        .map_err(AppError::from)
 }
