@@ -7,6 +7,15 @@ use axum::{
 };
 use sqlx::SqlitePool;
 
+pub async fn get_all_users(
+    State(pool): State<SqlitePool>,
+) -> Result<Json<Vec<UserResponse>>, StatusCode> {
+    User::find_all(&pool)
+        .await
+        .map(|users| Json(users.into_iter().map(UserResponse::from).collect()))
+        .map_err(|_| StatusCode::NOT_FOUND)
+}
+
 pub async fn get_user(
     State(pool): State<SqlitePool>,
     Path(id): Path<i64>,

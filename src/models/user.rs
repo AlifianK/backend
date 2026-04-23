@@ -21,6 +21,12 @@ pub struct UpdateUser {
 }
 
 impl User {
+    pub async fn find_all(pool: &SqlitePool) -> sqlx::Result<Vec<Self>> {
+        sqlx::query_as::<_, Self>("SELECT * FROM users")
+            .fetch_all(pool)
+            .await
+    }
+
     pub async fn find_by_id(pool: &SqlitePool, id: i64) -> sqlx::Result<Self> {
         sqlx::query_as!(Self, "SELECT * FROM users WHERE id = ?", id)
             .fetch_one(pool)
