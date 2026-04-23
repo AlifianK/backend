@@ -33,7 +33,14 @@ pub async fn create_user(
     User::create(&pool, body)
         .await
         .map(|u| Json(UserResponse::from(u)))
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+        .map_err(|e| match e {
+            sqlx::Error::Database(db_err)
+                if db_err.message().contains("UNIQUE constraint failed") =>
+            {
+                StatusCode::CONFLICT
+            }
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
+        })
 }
 
 pub async fn delete_user(
