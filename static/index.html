@@ -48,11 +48,11 @@
     <h2>Create User</h2>
     <input id="name" placeholder="Name" />
     <input id="email" placeholder="Email" />
-    <button>Create</button>
+    <button onclick="createUser()">Create</button>
     <p class="error" id="error"></p>
 
     <h2>Users</h2>
-    <button>Refresh</button>
+    <button onclick="fetchUsers()">Refresh</button>
     <table>
         <thead>
             <tr>
@@ -62,15 +62,56 @@
                 <th>Action</th>
             </tr>
         </thead>
-        <tbody id="users">
-            <tr>
-                <td>1</td>
-                <td>Ali</td>
-                <td>ali@example.com</td>
-                <td><button>Delete</button></td>
-            </tr>
-        </tbody>
+        <tbody id="users"></tbody>
     </table>
+
+    <script>
+        const API = "";
+
+        async function fetchUsers() {
+            const res = await fetch(`${API}/users`);
+            const users = await res.json();
+            document.getElementById("users").innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.name}</td>
+                    <td>${u.email}</td>
+                    <td><button onclick="deleteUser(${u.id})">Delete</button></td>
+                </tr>
+            `).join("");
+            error.textContent = "";
+        }
+
+        async function createUser() {
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const error = document.getElementById("error");
+
+            const res = await fetch(`${API}/users`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email })
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                error.textContent = data.error ?? "Something went wrong";
+                return;
+            }
+
+            error.textContent = "";
+            document.getElementById("name").value = "";
+            document.getElementById("email").value = "";
+            fetchUsers();
+        }
+
+        async function deleteUser(id) {
+            await fetch(`${API}/users/${id}`, { method: "DELETE" });
+            fetchUsers();
+        }
+
+        fetchUsers();
+    </script>
 </body>
 
 </html>
