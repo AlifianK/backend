@@ -4,6 +4,7 @@ use axum::{
     routing::{delete, get, patch, post},
 };
 use sqlx::SqlitePool;
+use tower_http::services::ServeDir;
 
 pub fn create_router(pool: SqlitePool) -> Router {
     Router::new()
@@ -17,5 +18,6 @@ pub fn create_router(pool: SqlitePool) -> Router {
             "/users",
             get(user_controller::get_all_users).post(user_controller::create_user),
         )
+        .fallback_service(ServeDir::new("static"))
         .with_state(pool)
 }
