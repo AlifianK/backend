@@ -49,13 +49,6 @@ impl User {
         .await
     }
 
-    pub async fn delete(pool: &SqlitePool, id: i64) -> sqlx::Result<()> {
-        sqlx::query!("DELETE FROM users WHERE id = ?", id)
-            .execute(pool)
-            .await
-            .map(|_| ())
-    }
-
     pub async fn update(pool: &SqlitePool, id: i64, data: UpdateUser) -> sqlx::Result<Self> {
         sqlx::query_as!(
             Self,
@@ -69,5 +62,12 @@ impl User {
         )
         .fetch_one(pool)
         .await
+    }
+
+    pub async fn delete(pool: &SqlitePool, id: i64) -> sqlx::Result<()> {
+        sqlx::query!("DELETE FROM users WHERE id = ?", id)
+            .execute(pool)
+            .await
+            .map(|_| ())
     }
 }
