@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS posts (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title      TEXT NOT NULL,
+    content    TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
