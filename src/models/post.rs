@@ -11,6 +11,16 @@ pub struct Post {
     pub created_at: String,
 }
 
+#[derive(sqlx::FromRow, Serialize, Debug)]
+pub struct PostWithUser {
+    pub id: i64,
+    pub user_id: i64,
+    pub user_name: String,
+    pub title: String,
+    pub content: String,
+    pub created_at: String,
+}
+
 #[derive(Deserialize, Validate)]
 pub struct CreatePost {
     pub user_id: i64,
@@ -33,6 +43,16 @@ impl Post {
         sqlx::query_as::<_, Self>("SELECT * FROM posts")
             .fetch_all(pool)
             .await
+    }
+
+    pub async fn find_all_with_user(pool: &SqlitePool) -> sqlx::Result<Vec<PostWithUser>> {
+        sqlx::query_as::<_, PostWithUser>(
+            "SELECT posts.*, users.name as user_name FROM posts
+             JOIN users ON posts.user_id = users.id
+             ORDER BY posts.created_at DESC",
+        )
+        .fetch_all(pool)
+        .await
     }
 
     pub async fn find_by_id(pool: &SqlitePool, id: i64) -> sqlx::Result<Self> {

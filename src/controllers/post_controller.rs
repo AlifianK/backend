@@ -1,6 +1,6 @@
 use crate::errors::AppError;
 use crate::models::post::{CreatePost, Post, UpdatePost};
-use crate::views::post_view::PostResponse;
+use crate::views::post_view::{PostResponse, PostWithUserResponse};
 use axum::{
     Json,
     extract::{Path, State},
@@ -10,10 +10,10 @@ use validator::Validate;
 
 pub async fn get_all_posts(
     State(pool): State<SqlitePool>,
-) -> Result<Json<Vec<PostResponse>>, AppError> {
-    Post::find_all(&pool)
+) -> Result<Json<Vec<PostWithUserResponse>>, AppError> {
+    Post::find_all_with_user(&pool)
         .await
-        .map(|posts| Json(posts.into_iter().map(PostResponse::from).collect()))
+        .map(|posts| Json(posts.into_iter().map(PostWithUserResponse::from).collect()))
         .map_err(AppError::from)
 }
 
