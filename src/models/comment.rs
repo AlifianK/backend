@@ -19,6 +19,12 @@ pub struct CreateComment {
     pub content: String,
 }
 
+#[derive(Deserialize, Validate)]
+pub struct UpdateComment {
+    #[validate(length(min = 1, message = "Content cannot be empty"))]
+    pub content: Option<String>,
+}
+
 impl Comment {
     pub async fn find_by_post(pool: &SqlitePool, post_id: i64) -> sqlx::Result<Vec<Self>> {
         sqlx::query_as::<_, Self>("SELECT * FROM comments WHERE post_id = ?")
@@ -43,5 +49,23 @@ impl Comment {
         .bind(data.content)
         .fetch_one(pool)
         .await
+    }
+
+    pub async fn update(pool: &SqlitePool, id: i64, data: UpdateComment) -> sqlx::Result<Self> {
+        sqlx::query_as::<_, Self>(
+            "UPDATE comments SET content = COALESCE(?, content) WHERE id = ? RETURNING *",
+        )
+        .bind(data.content)
+        .bind(id)
+        .fetch_one(pool)
+        .await
+    }
+
+    pub async fn delete(pool: &SqlitePool, id: i64) -> sqlx::Result<()> {
+        sqlx::query("DELETE FROM comments WHERE id = ?")
+            .bind(id)
+            .execute(pool)
+            .await
+            .map(|_| ())
     }
 }

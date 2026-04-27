@@ -38,6 +38,10 @@ pub fn create_router(pool: SqlitePool) -> Router {
             "/posts/{post_id}/comments",
             get(comment_controller::get_comments_by_post).post(comment_controller::create_comment),
         )
+        .route(
+            "/comments/{id}",
+            patch(comment_controller::update_comment).delete(comment_controller::delete_comment),
+        )
         .fallback_service(ServeDir::new("static"))
         .with_state(pool)
 }
