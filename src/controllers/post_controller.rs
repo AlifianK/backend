@@ -48,3 +48,10 @@ pub async fn create_post(
         .map(|p| Json(PostResponse::from(p)))
         .map_err(AppError::from)
 }
+
+pub async fn delete_post(
+    State(pool): State<SqlitePool>,
+    Path(id): Path<i64>,
+) -> Result<(), AppError> {
+    Post::delete(&pool, id).await.map_err(AppError::from)
+}

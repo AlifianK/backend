@@ -51,4 +51,12 @@ impl Post {
         .fetch_one(pool)
         .await
     }
+
+    pub async fn delete(pool: &SqlitePool, id: i64) -> sqlx::Result<()> {
+        sqlx::query("DELETE FROM posts WHERE id = ?")
+            .bind(id)
+            .execute(pool)
+            .await
+            .map(|_| ())
+    }
 }
