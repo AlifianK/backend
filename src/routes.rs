@@ -1,3 +1,4 @@
+use crate::controllers::comment_controller;
 use crate::controllers::post_controller;
 use crate::controllers::user_controller;
 use axum::{
@@ -32,6 +33,10 @@ pub fn create_router(pool: SqlitePool) -> Router {
         .route(
             "/users/{user_id}/posts",
             get(post_controller::get_posts_by_user),
+        )
+        .route(
+            "/posts/{post_id}/comments",
+            get(comment_controller::get_comments_by_post).post(comment_controller::create_comment),
         )
         .fallback_service(ServeDir::new("static"))
         .with_state(pool)
