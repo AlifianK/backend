@@ -25,7 +25,9 @@ pub fn create_router(pool: SqlitePool) -> Router {
         )
         .route(
             "/posts/{id}",
-            get(post_controller::get_post).delete(post_controller::delete_post),
+            get(post_controller::get_post)
+                .delete(post_controller::delete_post)
+                .patch(post_controller::update_post),
         )
         .route(
             "/users/{user_id}/posts",

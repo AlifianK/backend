@@ -1,5 +1,5 @@
 use crate::errors::AppError;
-use crate::models::post::{CreatePost, Post};
+use crate::models::post::{CreatePost, Post, UpdatePost};
 use crate::views::post_view::PostResponse;
 use axum::{
     Json,
@@ -44,6 +44,19 @@ pub async fn create_post(
     body.validate().map_err(AppError::from)?;
 
     Post::create(&pool, body)
+        .await
+        .map(|p| Json(PostResponse::from(p)))
+        .map_err(AppError::from)
+}
+
+pub async fn update_post(
+    State(pool): State<SqlitePool>,
+    Path(id): Path<i64>,
+    Json(body): Json<UpdatePost>,
+) -> Result<Json<PostResponse>, AppError> {
+    body.validate().map_err(AppError::from)?;
+
+    Post::update(&pool, id, body)
         .await
         .map(|p| Json(PostResponse::from(p)))
         .map_err(AppError::from)

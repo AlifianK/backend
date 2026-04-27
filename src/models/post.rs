@@ -20,6 +20,14 @@ pub struct CreatePost {
     pub content: String,
 }
 
+#[derive(Deserialize, Validate)]
+pub struct UpdatePost {
+    #[validate(length(min = 1, message = "Title cannot be empty"))]
+    pub title: Option<String>,
+    #[validate(length(min = 1, message = "Content cannot be empty"))]
+    pub content: Option<String>,
+}
+
 impl Post {
     pub async fn find_all(pool: &SqlitePool) -> sqlx::Result<Vec<Self>> {
         sqlx::query_as::<_, Self>("SELECT * FROM posts")
@@ -48,6 +56,20 @@ impl Post {
         .bind(data.user_id)
         .bind(data.title)
         .bind(data.content)
+        .fetch_one(pool)
+        .await
+    }
+
+    pub async fn update(pool: &SqlitePool, id: i64, data: UpdatePost) -> sqlx::Result<Self> {
+        sqlx::query_as::<_, Self>(
+            "UPDATE posts SET
+                title   = COALESCE(?, title),
+                content = COALESCE(?, content)
+            WHERE id = ? RETURNING *",
+        )
+        .bind(data.title)
+        .bind(data.content)
+        .bind(id)
         .fetch_one(pool)
         .await
     }
